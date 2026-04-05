@@ -1,0 +1,41 @@
+# Rust / Cargo
+/target/
+Cargo.lock
+**/*.rs.bk
+
+# Tauri v2 (Flat Structure)
+/gen/
+/bin/
+
+# Frontend Dist
+/dist/
+/out/
+
+# Node/JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Docker Artifacts
+.docker-temp/
+
+# Environment & Credentials
+.env
+*.pem
+*.key
+
+# System / Linux
+.DS_Store
+.directory
+.pdm-python
+__pycache__/
+*.swp
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

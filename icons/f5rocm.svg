@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="32" ry="32" fill="#050505" stroke="#222" stroke-width="2"/>
+  
+  <g opacity="0.1" fill="none" stroke="#108040" stroke-width="0.5">
+    <path d="M0 32h256M0 64h256M0 96h256M0 128h256M0 160h256M0 192h256M0 224h256"/>
+    <path d="M32 0v256M64 0v256M96 0v256M128 0v256M160 0v256M192 0v256M224 0v256"/>
+  </g>
+  
+  <g transform="translate(128, 64) scale(0.6)">
+    <path d="M0,-60 C20,-40 40,-10 40,30 C40,60 0,100 -40,100 C-80,100 -120,60 -120,30 C-120,-10 -100,-40 -80,-60 L0,-60 Z" fill="none" stroke="#ED1C24" stroke-width="8" opacity="0.9"/>
+    <path d="M0,-40 C15,-25 30,-5 30,25 C30,50 0,80 -30,80 C-60,80 -90,50 -90,25 C-90,-5 -75,-25 -60,-40 L0,-40 Z" fill="none" stroke="#D32F2F" stroke-width="6"/>
+  </g>
+  
+  <g transform="translate(128, 128) scale(0.8)">
+    <circle cx="-60" cy="-60" r="10" fill="#00C853" opacity="0.9"/>
+    <circle cx="60" cy="-60" r="10" fill="#00C853" opacity="0.9"/>
+    <circle cx="-60" cy="60" r="10" fill="#00C853" opacity="0.9"/>
+    <circle cx="60" cy="60" r="10" fill="#00C853" opacity="0.9"/>
+    <circle cx="0" cy="0" r="18" fill="#00E676" opacity="1"/>
+    
+    <g stroke="#00C853" stroke-width="5" opacity="0.7">
+      <line x1="-50" y1="-50" x2="-12" y2="-12"/>
+      <line x1="50" y1="-50" x2="12" y2="-12"/>
+      <line x1="-50" y1="50" x2="-12" y2="12"/>
+      <line x1="50" y1="50" x2="12" y2="12"/>
+      <line x1="0" y1="-18" x2="0" y2="18"/>
+      <line x1="-18" y1="0" x2="18" y2="0"/>
+    </g>
+  </g>
+  
+  <path d="M64,180 Q80,160 96,180 Q112,200 128,180 Q144,160 160,180 Q176,200 192,180" fill="none" stroke="#EEE" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+  <path d="M64,200 Q80,180 96,200 Q112,220 128,200 Q144,180 160,200 Q176,220 192,200" fill="none" stroke="#AAA" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+  
+  <text x="128" y="100" font-family="monospace, Courier New" font-size="28px" fill="#EEE" text-anchor="middle" font-weight="bold" letter-spacing="2px">
+    MV_O
+  </text>
+  
+  <text x="128" y="240" font-family="monospace, Courier New" font-size="16px" fill="#AAA" text-anchor="middle" letter-spacing="1px" opacity="0.7">
+    VOICE_STUDIO v2
+  </text>
+  
+  <text x="210" y="240" font-family="monospace, Courier New" font-size="24px" fill="#D44" text-anchor="middle" font-weight="bold" opacity="0.9">
+    f5
+  </text>
+
+</svg>
+
