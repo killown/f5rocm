@@ -1,6 +1,10 @@
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::time::Duration;
+use tauri::webview::{DownloadEvent, WebviewWindowBuilder};
 use tauri::{Emitter, Manager};
+use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_store::StoreExt;
 use tokio::time::sleep;
 
 fn get_env_var(key: &str, default: &str) -> String {
@@ -24,6 +28,61 @@ const SPLASH_DATA_URL: &str = r#"data:text/html,
     </script>
 </body>
 </html>"#;
+
+#[tauri::command]
+async fn download_file(app: tauri::AppHandle, name: String, data: Vec<u8>) -> Result<(), String> {
+    let store = app.store("settings.json").map_err(|e| e.to_string())?;
+
+    let mut save_dir: Option<PathBuf> = store
+        .get("download_path")
+        .and_then(|v| v.as_str().map(PathBuf::from));
+
+    if save_dir.is_none() {
+        if let Some(home) = dirs::home_dir() {
+            let downloads = home.join("Downloads");
+            if downloads.exists() && downloads.is_dir() {
+                save_dir = Some(downloads);
+            }
+        }
+    }
+
+    let final_path = if let Some(dir) = save_dir {
+        dir.join(name)
+    } else {
+        let picked = app.dialog().file().set_file_name(name).blocking_save_file();
+
+        if let Some(p) = picked {
+            let p_buf = p.as_path().ok_or("INVALID_PATH")?.to_path_buf();
+            if let Some(parent) = p_buf.parent() {
+                store.set("download_path", parent.to_string_lossy().to_string());
+                let _ = store.save();
+            }
+            p_buf
+        } else {
+            return Err("SAVE_CANCELLED".into());
+        }
+    };
+
+    std::fs::write(&final_path, data)
+        .map_err(|e| format!("Write failed to {:?}: {}", final_path, e))?;
+    Ok(())
+}
+
+fn resolve_download_dir(app: &tauri::AppHandle) -> Option<PathBuf> {
+    if let Ok(store) = app.store("settings.json") {
+        if let Some(dir) = store
+            .get("download_path")
+            .and_then(|v| v.as_str().map(PathBuf::from))
+        {
+            if dir.is_dir() {
+                return Some(dir);
+            }
+        }
+    }
+    dirs::home_dir()
+        .map(|h| h.join("Downloads"))
+        .filter(|p| p.is_dir())
+}
 
 async fn container_exists(name: &str) -> bool {
     let output = Command::new("docker")
@@ -67,14 +126,82 @@ pub async fn run() {
     let gradio_url = get_env_var("GRADIO_URL", "http://localhost:7860");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .invoke_handler(tauri::generate_handler![download_file])
         .setup(move |app| {
-            let main_window = app
-                .get_webview_window("main")
-                .expect("main window not found");
+            if let Some(target_dir) = resolve_download_dir(app.handle()) {
+                let _ = std::env::set_current_dir(target_dir);
+            }
+
             let splash_window = app
                 .get_webview_window("splash")
                 .expect("splash window not found");
             let _ = splash_window.navigate(reqwest::Url::parse(SPLASH_DATA_URL).unwrap());
+
+            let app_handle_for_dl = app.handle().clone();
+            let main_window =
+                WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("index.html".into()))
+                    .title("Matrix Voice Studio")
+                    .inner_size(1280.0, 800.0)
+                    .visible(false)
+                    .on_download(move |_webview, event| match event {
+                        DownloadEvent::Requested {
+                            url: _,
+                            destination,
+                        } => {
+                            let suggested = destination
+                                .file_name()
+                                .map(|n| n.to_string_lossy().to_string())
+                                .unwrap_or_else(|| "download".to_string());
+
+                            match resolve_download_dir(&app_handle_for_dl) {
+                                Some(dir) => {
+                                    *destination = dir.join(&suggested);
+                                    true
+                                }
+                                None => {
+                                    let picked = app_handle_for_dl
+                                        .dialog()
+                                        .file()
+                                        .set_file_name(&suggested)
+                                        .blocking_save_file();
+
+                                    match picked {
+                                        Some(p) => match p.as_path() {
+                                            Some(path) => {
+                                                if let (Some(parent), Ok(store)) = (
+                                                    path.parent(),
+                                                    app_handle_for_dl.store("settings.json"),
+                                                ) {
+                                                    store.set(
+                                                        "download_path",
+                                                        parent.to_string_lossy().to_string(),
+                                                    );
+                                                    let _ = store.save();
+                                                }
+                                                *destination = path.to_path_buf();
+                                                true
+                                            }
+                                            None => false,
+                                        },
+                                        None => false,
+                                    }
+                                }
+                            }
+                        }
+                        DownloadEvent::Finished {
+                            url: _,
+                            path,
+                            success,
+                        } => {
+                            eprintln!("download finished — path: {:?}, success: {}", path, success);
+                            true
+                        }
+                        _ => true,
+                    })
+                    .build()?;
 
             let g_url = gradio_url.clone();
             let c_name = container_name.clone();

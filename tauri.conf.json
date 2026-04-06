@@ -10,22 +10,13 @@
   "app": {
     "windows": [
       {
-        "label": "main",
-        "title": "Matrix Voice Studio",
-        "width": 1200,
-        "height": 900,
-        "resizable": true,
-        "visible": false
-      },
-      {
         "label": "splash",
-        "title": "Initializing",
-        "width": 450,
-        "height": 250,
+        "title": "",
+        "width": 300,
+        "height": 160,
         "decorations": false,
-        "alwaysOnTop": true,
-        "center": true,
         "resizable": false,
+        "center": true,
         "visible": true
       }
     ],
@@ -48,5 +39,8 @@
         "depends": ["curl", "wget"]
       }
     }
+  },
+  "plugins": {
+    "store": null
   }
 }
